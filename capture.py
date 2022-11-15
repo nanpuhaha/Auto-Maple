@@ -62,7 +62,7 @@ class Capture:
                     # Check for unexpected black screen regardless of whether bot is enabled
                     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                     if not config.alert_active \
-                            and np.count_nonzero(gray < 15) / height / width > 0.95:
+                                and np.count_nonzero(gray < 15) / height / width > 0.95:
                         config.alert_active = True
                         config.enabled = False
 
@@ -75,8 +75,9 @@ class Capture:
 
                     # Crop the frame to only show the minimap
                     minimap = frame[mm_tl[1]:mm_br[1], mm_tl[0]:mm_br[0]]
-                    player = utils.multi_match(minimap, config.PLAYER_TEMPLATE, threshold=0.8)
-                    if player:
+                    if player := utils.multi_match(
+                        minimap, config.PLAYER_TEMPLATE, threshold=0.8
+                    ):
                         config.player_pos = utils.convert_to_relative(player[0], minimap)
 
                     # Check for a rune

@@ -30,9 +30,9 @@ class Move(Command):
         local_error = utils.distance(config.player_pos, target)
         global_error = utils.distance(config.player_pos, self.target)
         while config.enabled and \
-                counter > 0 and \
-                local_error > config.move_tolerance and \
-                global_error > config.move_tolerance:
+                    counter > 0 and \
+                    local_error > config.move_tolerance and \
+                    global_error > config.move_tolerance:
             if toggle:
                 d_x = target[0] - config.player_pos[0]
                 if abs(d_x) > config.move_tolerance / math.sqrt(2):

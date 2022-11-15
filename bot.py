@@ -161,8 +161,7 @@ class Bot:
         inferences = []
         for _ in range(15):
             frame = np.array(sct.grab(config.MONITOR))
-            solution = detection.merge_detection(model, frame)
-            if solution:
+            if solution := detection.merge_detection(model, frame):
                 print(', '.join(solution))
                 if solution in inferences:
                     print('Solution found, entering result.')
@@ -172,10 +171,11 @@ class Bot:
                     for _ in range(3):
                         time.sleep(0.3)
                         frame = np.array(sct.grab(config.MONITOR))
-                        rune_buff = utils.multi_match(frame[:frame.shape[0]//8, :],
-                                                      config.RUNE_BUFF_TEMPLATE,
-                                                      threshold=0.9)
-                        if rune_buff:
+                        if rune_buff := utils.multi_match(
+                            frame[: frame.shape[0] // 8, :],
+                            config.RUNE_BUFF_TEMPLATE,
+                            threshold=0.9,
+                        ):
                             rune_buff_pos = min(rune_buff, key=lambda p: p[0])
                             click(rune_buff_pos, button='right')
                     break
@@ -274,10 +274,8 @@ class Bot:
             with open(join(routines_dir, file), newline='') as f:
                 csv_reader = csv.reader(f, skipinitialspace=True)
                 curr_point = None
-                line = 1
-                for row in csv_reader:
-                    result = Bot._eval(row, line)
-                    if result:
+                for line, row in enumerate(csv_reader, start=1):
+                    if result := Bot._eval(row, line):
                         if isinstance(result, commands.Command):
                             if curr_point:
                                 curr_point.commands.append(result)
@@ -285,7 +283,6 @@ class Bot:
                             config.sequence.append(result)
                             if isinstance(result, Point):
                                 curr_point = result
-                    line += 1
             config.routine = file
             config.layout = Layout.load(file)
             print(f"Finished loading routine '{file}'.")
@@ -302,46 +299,46 @@ class Bot:
         :return:        An object that represents EXPR.
         """
 
-        if expr and isinstance(expr, list):
-            first, rest = expr[0].lower(), expr[1:]
-            args, kwargs = utils.separate_args(rest)
-            line = f'Line {n}: '
-            if first == '@':        # Check for labels
-                if len(args) != 1 or len(kwargs) != 0:
-                    print(line + 'Incorrect number of arguments for a label.')
-                else:
-                    return args[0]
-            elif first == 's':      # Check for settings
-                if len(args) != 2 or len(kwargs) != 0:
-                    print(line + 'Incorrect number of arguments for a setting.')
-                else:
-                    variable = args[0].lower()
-                    value = args[1].lower()
-                    if variable not in SETTING_VALIDATORS:
-                        print(line + f"'{variable}' is not a valid setting.")
-                    else:
-                        try:
-                            value = SETTING_VALIDATORS[variable](value)
-                            setattr(config, variable, value)
-                        except ValueError:
-                            print(line + f"'{value}' is not a valid value for '{variable}'.")
-            elif first == '*':      # Check for Points
-                try:
-                    return Point(*args, **kwargs)
-                except ValueError:
-                    print(line + f'Invalid arguments for a Point: {args}, {kwargs}')
-                except TypeError:
-                    print(line + 'Incorrect number of arguments for a Point.')
-            else:                   # Otherwise might be a Command
-                if first not in config.command_book.keys():
-                    print(line + f"Command '{first}' does not exist.")
+        if not expr or not isinstance(expr, list):
+            return
+        first, rest = expr[0].lower(), expr[1:]
+        args, kwargs = utils.separate_args(rest)
+        line = f'Line {n}: '
+        if first == '@':    # Check for labels
+            if len(args) == 1 and len(kwargs) == 0:
+                return args[0]
+            else:
+                print(f'{line}Incorrect number of arguments for a label.')
+        elif first == 's':  # Check for settings
+            if len(args) != 2 or len(kwargs) != 0:
+                print(f'{line}Incorrect number of arguments for a setting.')
+            else:
+                variable = args[0].lower()
+                value = args[1].lower()
+                if variable not in SETTING_VALIDATORS:
+                    print(f"{line}'{variable}' is not a valid setting.")
                 else:
                     try:
-                        return config.command_book.get(first)(*args, **kwargs)
+                        value = SETTING_VALIDATORS[variable](value)
+                        setattr(config, variable, value)
                     except ValueError:
-                        print(line + f"Invalid arguments for command '{first}': {args}, {kwargs}")
-                    except TypeError:
-                        print(line + f"Incorrect number of arguments for command '{first}'.")
+                        print(f"{line}'{value}' is not a valid value for '{variable}'.")
+        elif first == '*':  # Check for Points
+            try:
+                return Point(*args, **kwargs)
+            except ValueError:
+                print(f'{line}Invalid arguments for a Point: {args}, {kwargs}')
+            except TypeError:
+                print(f'{line}Incorrect number of arguments for a Point.')
+        elif first not in config.command_book.keys():
+            print(f"{line}Command '{first}' does not exist.")
+        else:
+            try:
+                return config.command_book.get(first)(*args, **kwargs)
+            except ValueError:
+                print(f"{line}Invalid arguments for command '{first}': {args}, {kwargs}")
+            except TypeError:
+                print(f"{line}Incorrect number of arguments for command '{first}'.")
 
     @staticmethod
     def _select_file(directory, extension):
@@ -354,11 +351,11 @@ class Bot:
 
         index = float('inf')
         valid_files = [f for f in listdir(directory) if isfile(join(directory, f)) and extension in f]
-        num_files = len(valid_files)
         if not valid_files:
             print(f"Unable to find any '{extension}' files in '{directory}'.")
         else:
             print('Please select from the following files:\n')
+            num_files = len(valid_files)
             for i in range(num_files):
                 print(f'{i:02} -- {valid_files[i]}')
             print()

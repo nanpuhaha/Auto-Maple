@@ -30,9 +30,9 @@ class Move(Command):
         local_error = utils.distance(config.player_pos, target)
         global_error = utils.distance(config.player_pos, self.target)
         while config.enabled and \
-                counter > 0 and \
-                local_error > config.move_tolerance and \
-                global_error > config.move_tolerance:
+                    counter > 0 and \
+                    local_error > config.move_tolerance and \
+                    global_error > config.move_tolerance:
             if toggle:
                 d_x = target[0] - config.player_pos[0]
                 if abs(d_x) > config.move_tolerance / math.sqrt(2):
@@ -114,12 +114,12 @@ class Buff(Command):
         self.buff_time = 0
 
     def main(self):
-        buffs = ['f1', 'f2', 'f4']
         now = time.time()
         if self.haku_time == 0 or now - self.haku_time > 490:
             press('ctrl', 2)
             self.haku_time = now
         if self.buff_time == 0 or now - self.buff_time > config.buff_cooldown:
+            buffs = ['f1', 'f2', 'f4']
             for key in buffs:
                 press(key, 3, up_time=0.3)
             self.buff_time = now
@@ -137,10 +137,8 @@ class Teleport(Command):
         self.jump = utils.validate_boolean(jump)
 
     def main(self):
-        num_presses = 3
         time.sleep(0.05)
-        if self.direction in ['up', 'down']:
-            num_presses = 2
+        num_presses = 2 if self.direction in ['up', 'down'] else 3
         if self.direction != 'up':
             key_down(self.direction)
             time.sleep(0.05)
@@ -203,11 +201,10 @@ class Yaksha(Command):
     def main(self):
         if self.direction:
             press(self.direction, 1, down_time=0.1, up_time=0.05)
+        elif config.player_pos[0] > 0.5:
+            press('left', 1, down_time=0.1, up_time=0.05)
         else:
-            if config.player_pos[0] > 0.5:
-                press('left', 1, down_time=0.1, up_time=0.05)
-            else:
-                press('right', 1, down_time=0.1, up_time=0.05)
+            press('right', 1, down_time=0.1, up_time=0.05)
         press('2', 3)
 
 

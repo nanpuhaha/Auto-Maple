@@ -122,19 +122,20 @@ class Layout:
         nodes = []
 
         def search_helper(node):
-            if node:
-                if x_min <= node.x <= x_max and y_min <= node.y <= y_max:
-                    nodes.append(node)
-                if x_min < node.x:
-                    if y_min < node.y:
-                        search_helper(node.down_left)
-                    if y_max >= node.y:
-                        search_helper(node.up_left)
-                if x_max >= node.x:
-                    if y_min < node.y:
-                        search_helper(node.down_right)
-                    if y_max >= node.y:
-                        search_helper(node.up_right)
+            if not node:
+                return
+            if x_min <= node.x <= x_max and y_min <= node.y <= y_max:
+                nodes.append(node)
+            if x_min < node.x:
+                if y_min < node.y:
+                    search_helper(node.down_left)
+                if y_max >= node.y:
+                    search_helper(node.up_left)
+            if x_max >= node.x:
+                if y_min < node.y:
+                    search_helper(node.down_right)
+                if y_max >= node.y:
+                    search_helper(node.up_right)
 
         search_helper(self.root)
         return nodes
@@ -221,7 +222,7 @@ class Layout:
         i = 0
         while utils.distance(vertices[i], target) > config.move_tolerance:
             push_neighbors(i)
-            if len(fringe) == 0:
+            if not fringe:
                 break
             i = heappop(fringe)[1]
 
